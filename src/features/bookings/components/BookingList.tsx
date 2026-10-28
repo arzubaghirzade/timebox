@@ -94,7 +94,9 @@ export function BookingList({
             <span className={booking.title ? 'booking__title' : 'booking__title booking__title--empty'}>
               {booking.title ?? 'Untitled booking'}
             </span>
-            {status && <span className="badge">{status}</span>}
+            {status && (
+              <span className={status === 'In progress' ? 'badge badge--accent' : 'badge'}>{status}</span>
+            )}
             {isEditing && <span className="badge badge--accent">Editing</span>}
 
             {canModify && !isEditing && (
