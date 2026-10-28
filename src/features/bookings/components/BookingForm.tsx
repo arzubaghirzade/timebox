@@ -1,4 +1,4 @@
-import { useEffect, useId, useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react'
+import { Fragment, useEffect, useId, useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react'
 import { WORKING_DAY_END, WORKING_DAY_START } from '../domain/constants'
 import { normalizeTitle } from '../domain/rules'
 import { fromMinutes, toMinutes } from '../domain/time'
@@ -29,6 +29,9 @@ type BookingFormProps = {
   onCancel?: () => void
   /** Called on every edit, e.g. to clear a server error that no longer applies. */
   onValuesChange?: () => void
+  /** Edit mode only: deletes the booking being edited (after an inline confirmation). */
+  onDelete?: () => void
+  isDeleting?: boolean
 }
 
 export function BookingForm({
@@ -41,6 +44,8 @@ export function BookingForm({
   onSubmit,
   onCancel,
   onValuesChange,
+  onDelete,
+  isDeleting = false,
 }: BookingFormProps) {
   const id = useId()
   const fieldId = (field: EditableField) => `${id}-${field}`
@@ -51,6 +56,9 @@ export function BookingForm({
   )
   const [touched, setTouched] = useState(NOT_TOUCHED)
   const [submitAttempted, setSubmitAttempted] = useState(false)
+  const [confirmingDelete, setConfirmingDelete] = useState(false)
+  // After "Keep", focus returns to the Delete button (see the keyed fragments below).
+  const [keptBooking, setKeptBooking] = useState(false)
 
   const formErrorRef = useRef<HTMLDivElement>(null)
   const startRef = useRef<HTMLInputElement>(null)
@@ -178,15 +186,64 @@ export function BookingForm({
       )}
 
       <div className="booking-form__actions">
-        <button type="submit" className="button--primary" disabled={isSubmitting}>
+        <button type="submit" className="button--primary" disabled={isSubmitting || isDeleting}>
           {isSubmitting ? 'Saving…' : editing ? 'Save changes' : 'Create booking'}
         </button>
         {editing && onCancel && (
-          <button type="button" onClick={onCancel} disabled={isSubmitting}>
+          <button type="button" onClick={onCancel} disabled={isSubmitting || isDeleting}>
             Cancel
           </button>
         )}
       </div>
+
+      {editing && onDelete && (
+        // Keyed fragments remount the buttons, so `autoFocus` moves focus between the two states.
+        <div className="booking-form__delete">
+          {confirmingDelete || isDeleting ? (
+            <Fragment key="confirm">
+              <span className="booking-form__confirm-text">Delete this booking?</span>
+              <button
+                type="button"
+                className="button--danger"
+                disabled={isDeleting}
+                onClick={() => {
+                  setConfirmingDelete(false)
+                  onDelete()
+                }}
+              >
+                {isDeleting ? 'Deleting…' : 'Confirm delete'}
+              </button>
+              <button
+                type="button"
+                disabled={isDeleting}
+                // The safe choice gets focus, so a repeated Enter does not delete.
+                autoFocus
+                onClick={() => {
+                  setConfirmingDelete(false)
+                  setKeptBooking(true)
+                }}
+              >
+                Keep booking
+              </button>
+            </Fragment>
+          ) : (
+            <Fragment key="delete">
+              <button
+                type="button"
+                className="button--danger-quiet"
+                disabled={isSubmitting}
+                autoFocus={keptBooking}
+                onClick={() => {
+                  setKeptBooking(false)
+                  setConfirmingDelete(true)
+                }}
+              >
+                Delete booking
+              </button>
+            </Fragment>
+          )}
+        </div>
+      )}
     </form>
   )
 }

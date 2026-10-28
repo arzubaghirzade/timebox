@@ -1,25 +1,27 @@
 :root {
-  --text: #1f2328;
-  --text-muted: #57606a;
-  --page-bg: #f5f6f8;
-  --card: #ffffff;
-  --surface: #f6f8fa;
-  --border: #dde1e6;
+  --text: #2a2622;
+  --text-muted: #6b6259;
+  --page-bg: #faf7f2;
+  --card: #fffdfa;
+  --surface: #f4efe7;
+  --border: #e6dfd3;
   /* Form controls need ≥3:1 against their background. */
-  --border-strong: #818b98;
-  --divider: #eaedf0;
-  --accent: #0b57d0;
+  --border-strong: #8f8475;
+  --divider: #eee8de;
+  --accent: #1f5f4a;
   --accent-text: #ffffff;
-  --accent-soft: #eaf1fd;
+  --accent-soft: #e3eee8;
+  --terracotta: #a3472a;
+  --terracotta-soft: #f6e3d9;
+  --beige: #f2eadc;
+  --beige-border: #e4d8c4;
   --danger: #b42318;
-  --danger-bg: #fef3f2;
-  --success: #1a6b34;
-  --success-bg: #e8f5ec;
-  --notice-bg: #fff6dc;
-  --focus: #0b57d0;
+  --danger-bg: #fdf0ee;
+  --notice-bg: #fbf0d6;
+  --focus: #1f5f4a;
   --radius: 8px;
-  --radius-card: 12px;
-  --shadow-card: 0 1px 2px rgb(16 24 40 / 0.04), 0 1px 3px rgb(16 24 40 / 0.06);
+  --radius-card: 14px;
+  --shadow-card: 0 1px 2px rgb(60 45 25 / 0.04), 0 2px 6px rgb(60 45 25 / 0.05);
 
   font: 16px/1.5 system-ui, 'Segoe UI', Roboto, sans-serif;
   color-scheme: light dark;
@@ -29,23 +31,25 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --text: #e6edf3;
-    --text-muted: #9da7b3;
-    --page-bg: #0d1117;
-    --card: #161b22;
-    --surface: #1c2129;
-    --border: #30363d;
-    --border-strong: #6e7681;
-    --divider: #262c34;
-    --accent: #6ea8fe;
-    --accent-text: #0d1117;
-    --accent-soft: #15243d;
-    --danger: #ff8a80;
-    --danger-bg: #2d1414;
-    --success: #7ee2a0;
-    --success-bg: #12261a;
-    --notice-bg: #2b2410;
-    --focus: #6ea8fe;
+    --text: #ece6dd;
+    --text-muted: #b3a99c;
+    --page-bg: #151310;
+    --card: #1e1b17;
+    --surface: #27231e;
+    --border: #3a342c;
+    --border-strong: #7d7365;
+    --divider: #2c2822;
+    --accent: #8fcfb2;
+    --accent-text: #10261d;
+    --accent-soft: #1c3229;
+    --terracotta: #eaa284;
+    --terracotta-soft: #3a2419;
+    --beige: #2b261f;
+    --beige-border: #3d362c;
+    --danger: #ff9b8f;
+    --danger-bg: #2e1714;
+    --notice-bg: #2d2614;
+    --focus: #8fcfb2;
     --shadow-card: none;
   }
 }
@@ -68,7 +72,7 @@ p {
 }
 
 h1 {
-  font-size: 1.75rem;
+  font-size: 1.625rem;
   line-height: 1.2;
   letter-spacing: -0.01em;
 }
@@ -81,6 +85,18 @@ h2 {
 :focus-visible {
   outline: 3px solid var(--focus);
   outline-offset: 2px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 button,
@@ -127,7 +143,7 @@ input[aria-invalid='true'] {
 /* Layout */
 
 .app {
-  max-width: 1040px;
+  max-width: 1080px;
   margin: 0 auto;
   padding: 32px 16px 48px;
 }
@@ -167,7 +183,7 @@ input[aria-invalid='true'] {
 .panel {
   display: grid;
   gap: 16px;
-  padding: 20px;
+  padding: 22px;
   border: 1px solid var(--border);
   border-radius: var(--radius-card);
   background: var(--card);
@@ -177,13 +193,35 @@ input[aria-invalid='true'] {
 .panel__header {
   display: flex;
   flex-wrap: wrap;
-  align-items: baseline;
+  align-items: end;
   justify-content: space-between;
   gap: 8px;
 }
 
 .panel__header .muted {
   font-size: 0.875rem;
+}
+
+/* Date heading: weekday above a prominent date */
+
+.date-heading__weekday,
+.date-heading__date {
+  display: block;
+}
+
+.date-heading__weekday {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.date-heading__date {
+  font-size: 1.625rem;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
 }
 
 /* Date selector */
@@ -238,8 +276,8 @@ input[aria-invalid='true'] {
 .announcement {
   padding: 10px 14px;
   border-radius: var(--radius);
-  color: var(--success);
-  background: var(--success-bg);
+  color: var(--accent);
+  background: var(--accent-soft);
   font-weight: 600;
 }
 
@@ -247,7 +285,32 @@ input[aria-invalid='true'] {
   display: none;
 }
 
-/* Booking list */
+/* Badges */
+
+.badge {
+  padding: 1px 8px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.badge--in-progress {
+  border-color: transparent;
+  background: var(--terracotta-soft);
+  color: var(--terracotta);
+  font-weight: 600;
+}
+
+.badge--editing {
+  border-color: transparent;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* Stacked booking list (narrow screens) */
 
 .booking-list {
   display: grid;
@@ -318,20 +381,137 @@ input[aria-invalid='true'] {
   font-weight: 600;
 }
 
-.badge {
-  padding: 1px 8px;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  font-size: 0.8125rem;
-  color: var(--text-muted);
-  white-space: nowrap;
+/* Day timeline (wide screens) */
+
+.timeline {
+  --px-per-min: 1.6px;
+  --rail: 56px;
+  position: relative;
+  height: calc(var(--day-minutes) * var(--px-per-min));
+  margin: 10px 0;
 }
 
-.badge--accent {
-  border-color: transparent;
+.timeline__grid {
+  position: absolute;
+  inset: 0;
+}
+
+.timeline__hour {
+  position: absolute;
+  top: calc(var(--offset) * var(--px-per-min));
+  left: var(--rail);
+  right: 0;
+  border-top: 1px solid var(--divider);
+}
+
+.timeline__hour-label {
+  position: absolute;
+  top: 0;
+  left: calc(-1 * var(--rail));
+  width: calc(var(--rail) - 12px);
+  transform: translateY(-50%);
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  color: var(--text-muted);
+}
+
+.timeline__track {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(var(--rail) + 8px);
+  right: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Each block is confined to its own time slot (minus a 2px gap each side) and never grows. */
+.timeline__item {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(var(--offset) * var(--px-per-min) + 2px);
+  height: calc(var(--duration) * var(--px-per-min) - 4px);
+}
+
+.timeline__block {
+  display: flex;
+  align-items: center;
+  gap: 4px 12px;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  padding: 0 14px;
+  overflow: hidden;
+  border: 1px solid var(--beige-border);
+  border-left: 4px solid var(--accent);
+  border-radius: var(--radius);
+  background: var(--beige);
+  text-align: left;
+  font-weight: 400;
+}
+
+.timeline__block--tall {
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 2px;
+  padding: 8px 14px;
+}
+
+.timeline__block--in-progress {
+  border-left-color: var(--terracotta);
+  background: var(--terracotta-soft);
+}
+
+.timeline__block--finished {
+  border-color: var(--border);
+  border-left-color: var(--border-strong);
+  background: var(--surface);
+  color: var(--text-muted);
+}
+
+.timeline__block--editing {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
   background: var(--accent-soft);
-  color: var(--accent);
-  font-weight: 600;
+}
+
+button.timeline__block:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+/* Focus ring drawn inside the block so it never covers a neighbour. */
+.timeline__block:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: -3px;
+}
+
+.timeline__time {
+  flex: none;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.timeline__title {
+  flex: 1;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.timeline__block--tall .timeline__title {
+  flex: none;
+}
+
+.timeline__title--empty {
+  color: var(--text-muted);
+  font-style: italic;
 }
 
 /* Buttons */
@@ -347,6 +527,14 @@ input[aria-invalid='true'] {
 .booking__actions .button--danger,
 .button--danger {
   border-color: var(--danger);
+  color: var(--danger);
+  font-weight: 600;
+}
+
+.button--danger-quiet {
+  border-color: transparent;
+  background: transparent;
+  padding: 0 4px;
   color: var(--danger);
   font-weight: 600;
 }
@@ -373,6 +561,20 @@ input[aria-invalid='true'] {
 
 .booking-form__actions .button--primary {
   flex: 1 1 auto;
+}
+
+.booking-form__delete {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--divider);
+}
+
+.booking-form__confirm-text {
+  margin-right: auto;
+  font-weight: 600;
 }
 
 .field input {

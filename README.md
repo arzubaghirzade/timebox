@@ -28,14 +28,16 @@ npm run dev
 ## What's done
 
 - Date selection with a native date input plus Previous day / Today / Next day.
-- Bookings for the selected date, sorted by start, with "In progress" / "Finished" badges.
+- Wide screens (≥ 960 px): a single-day timeline from 09:00 to 18:00. Each booking is a block positioned by its real start and end, showing time, title and status. Selecting an upcoming block (click, Enter or Space) opens it in the edit form, which also holds the Delete action. Blocks have fixed heights within their own slot, so they never overlap.
+- Narrow screens: a stacked list with inline Edit and Delete buttons.
+- "In progress" / "Finished" badges; started and past bookings are read-only.
 - Create, edit and delete (with an inline confirmation step, not a browser dialog).
 - All business rules, checked on the client as you type and again on the mock server:
   working hours, start < end, 30 min – 2 h, no overlaps (touching edges allowed), no past dates or past times today, and an edited booking never conflicts with itself.
 - UI states: loading, empty, load error with retry, background refresh, submitting, server errors.
 - Conflict handling (rule 8): on `409` the list is refreshed, the entered values are kept, focus moves to a clear message, and the client-side check then names the booking that now blocks the slot. `404` and `422` are handled the same way.
 - Accessibility: labelled controls, errors linked with `aria-describedby` and `aria-invalid`, alerts and a polite live region for results, visible focus, focus moved to the first invalid field / the error / back to the triggering button, 44 px touch targets.
-- Responsive: two columns on wide screens, one column on phones (checked at 375 px, no horizontal scroll). Light and dark colour schemes.
+- Responsive: two columns from 720 px, the timeline from 960 px, one column on phones (checked at 375 px, no horizontal scroll). Light and dark colour schemes, AA contrast in both.
 
 ## Architecture
 
@@ -46,7 +48,7 @@ src/
     domain/                Pure business rules — no React, no network, no system clock
     api/                   BookingsApi interface + fetch implementation
     hooks/                 useBookings (query), useBookingMutations, useNowSnapshot
-    components/            DateSelector, BookingList, BookingForm
+    components/            DateSelector, BookingList (+ BookingTimeline), BookingForm
     BookingsPage.tsx       Composes the feature
     errors.ts, format.ts   User-facing messages and date labels
   shared/
@@ -103,14 +105,15 @@ The spec leaves these points open; this is how they were resolved.
 
 **UI**
 - English copy. Delete asks for confirmation inline; focus lands on "Keep", so a repeated Enter never deletes.
+- The layout switch (timeline vs list) is chosen with `matchMedia` rather than CSS alone, so only one set of controls exists at a time for keyboard and screen-reader users. The hour rail is decorative (`aria-hidden`), since every block states its own times.
 
 ## Testing
 
-241 tests, run with `npm test`:
+265 tests, run with `npm test`:
 
 - **Domain** — table-driven tests for every rule and boundary (09:00/18:00, 29/30/120/121 minutes, adjacency, containment, self-exclusion, past date/time, invalid formats, calendar arithmetic across month/year ends and DST).
 - **API contract** — the real HTTP client against the real MSW handlers: every endpoint and status code, partial PATCH, the simulated concurrent booking, error mapping (network failure, non-JSON 500, aborts).
-- **UI** — React Testing Library with user-event against the mock API and a fixed clock: loading/empty/error states, date navigation, create/edit/delete, inline validation, read-only rules, `409`/`404`/`422` recovery, and focus management.
+- **UI** — React Testing Library with user-event against the mock API and a fixed clock: loading/empty/error states, date navigation, create/edit/delete, inline validation, read-only rules, `409`/`404`/`422` recovery, and focus management — in both the list and the timeline layout (the timeline suite stubs `matchMedia`).
 
 Key tests were checked by temporarily breaking the code they protect (removing self-exclusion, the refresh after a conflict, the stale-error reset) and confirming they fail.
 

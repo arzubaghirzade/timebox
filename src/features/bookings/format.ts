@@ -19,8 +19,17 @@ const MONTHS = [
   'December',
 ]
 
+/** `2026-10-28` → `{ weekday: 'Wednesday', dayMonthYear: '28 October 2026' }`. */
+export function formatDateParts(date: DateString): { weekday: string; dayMonthYear: string } {
+  const value = fromDateString(date)
+  return {
+    weekday: WEEKDAYS[value.getDay()] ?? '',
+    dayMonthYear: `${value.getDate()} ${MONTHS[value.getMonth()]} ${value.getFullYear()}`,
+  }
+}
+
 /** `2026-10-28` → `Wednesday, 28 October 2026`. */
 export function formatDateLong(date: DateString): string {
-  const value = fromDateString(date)
-  return `${WEEKDAYS[value.getDay()]}, ${value.getDate()} ${MONTHS[value.getMonth()]} ${value.getFullYear()}`
+  const { weekday, dayMonthYear } = formatDateParts(date)
+  return `${weekday}, ${dayMonthYear}`
 }

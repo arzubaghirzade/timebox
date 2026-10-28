@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatDateLong } from './format'
+import { formatDateLong, formatDateParts } from './format'
 
 describe('formatDateLong', () => {
   it.each([
@@ -8,5 +8,11 @@ describe('formatDateLong', () => {
     ['2028-02-29', 'Tuesday, 29 February 2028'],
   ])('%s → %s', (date, expected) => {
     expect(formatDateLong(date)).toBe(expected)
+  })
+})
+
+describe('formatDateParts', () => {
+  it('splits the weekday from the date', () => {
+    expect(formatDateParts('2026-10-28')).toEqual({ weekday: 'Wednesday', dayMonthYear: '28 October 2026' })
   })
 })

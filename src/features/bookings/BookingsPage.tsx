@@ -6,7 +6,7 @@ import { WORKING_DAY_END, WORKING_DAY_START } from './domain/constants'
 import { isPastDate } from './domain/rules'
 import type { Booking, BookingDraft, DateString } from './domain/types'
 import { describeDeleteError, describeSaveError } from './errors'
-import { formatDateLong } from './format'
+import { formatDateParts } from './format'
 import { useBookingMutations } from './hooks/useBookingMutations'
 import { useBookings } from './hooks/useBookings'
 import { useNowSnapshot } from './hooks/useNowSnapshot'
@@ -20,8 +20,9 @@ export function BookingsPage() {
   // (deleted elsewhere → 404), the form stays in edit mode with the user's values.
   const [editing, setEditing] = useState<Booking | null>(null)
   const [announcement, setAnnouncement] = useState('')
-  // After leaving edit mode, focus goes back to that booking's Edit button.
-  const [returnFocusId, setReturnFocusId] = useState<string | null>(null)
+  // After leaving edit mode, focus goes back to that booking (its Edit button or
+  // timeline block). A new object each time, so repeating it for the same booking works.
+  const [returnFocus, setReturnFocus] = useState<{ id: string } | null>(null)
   const query = useBookings(date)
   const { create, update, remove } = useBookingMutations(date)
   const headingId = useId()
@@ -30,13 +31,14 @@ export function BookingsPage() {
   const bookings = query.data ?? []
   const isPast = isPastDate(date, now)
   const isRefreshing = query.isFetching && !query.isPending
+  const { weekday, dayMonthYear } = formatDateParts(date)
   const activeSave = editing ? update : create
   const saveError = activeSave.error ? describeSaveError(activeSave.error, editing ? 'edit' : 'create') : null
 
   function changeDate(next: DateString) {
     setDate(next)
     setEditing(null)
-    setReturnFocusId(null)
+    setReturnFocus(null)
     setAnnouncement('')
     create.reset()
     update.reset()
@@ -45,13 +47,13 @@ export function BookingsPage() {
 
   function startEdit(booking: Booking) {
     setEditing(booking)
-    setReturnFocusId(null)
+    setReturnFocus(null)
     setAnnouncement('')
     update.reset()
   }
 
   function cancelEdit() {
-    setReturnFocusId(editing?.id ?? null)
+    setReturnFocus(editing ? { id: editing.id } : null)
     setEditing(null)
     update.reset()
   }
@@ -66,7 +68,7 @@ export function BookingsPage() {
     try {
       if (editing) {
         await update.mutateAsync({ id: editing.id, draft })
-        setReturnFocusId(editing.id)
+        setReturnFocus({ id: editing.id })
         setEditing(null)
         setAnnouncement(`Booking ${range(draft)} updated.`)
       } else {
@@ -110,8 +112,9 @@ export function BookingsPage() {
       <div className="page__layout">
         <section className="panel" aria-labelledby={headingId} aria-busy={query.isFetching}>
           <div className="panel__header">
-            <h2 id={headingId} ref={listHeadingRef} tabIndex={-1}>
-              {formatDateLong(date)}
+            <h2 id={headingId} ref={listHeadingRef} tabIndex={-1} className="date-heading">
+              <span className="date-heading__weekday">{weekday},</span>{' '}
+              <span className="date-heading__date">{dayMonthYear}</span>
             </h2>
             {isRefreshing && (
               <span className="muted" role="status">
@@ -138,7 +141,7 @@ export function BookingsPage() {
             deletingId={remove.isPending ? remove.variables : null}
             onEdit={startEdit}
             onDelete={deleteBooking}
-            returnFocusId={returnFocusId}
+            returnFocus={returnFocus}
           />
         </section>
 
@@ -159,6 +162,8 @@ export function BookingsPage() {
             onSubmit={save}
             onCancel={cancelEdit}
             onValuesChange={clearSaveError}
+            onDelete={editing ? () => deleteBooking(editing) : undefined}
+            isDeleting={remove.isPending && remove.variables === editing?.id}
           />
         )}
       </div>

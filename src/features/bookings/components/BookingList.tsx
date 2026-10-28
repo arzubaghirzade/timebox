@@ -1,8 +1,12 @@
 import type { UseQueryResult } from '@tanstack/react-query'
 import { Fragment, useState } from 'react'
 import { WORKING_DAY_END, WORKING_DAY_START } from '../domain/constants'
-import { hasEnded, hasStarted, isPastDate } from '../domain/rules'
+import { isPastDate } from '../domain/rules'
 import type { Booking, DateString, NowSnapshot } from '../domain/types'
+import { useMediaQuery } from '../../../shared/hooks/useMediaQuery'
+import { bookingStatus, STATUS_LABEL } from '../status'
+import { TIMELINE_MEDIA_QUERY } from '../timeline'
+import { BookingTimeline } from './BookingTimeline'
 
 type BookingListProps = {
   date: DateString
@@ -13,14 +17,8 @@ type BookingListProps = {
   deletingId: string | null
   onEdit: (booking: Booking) => void
   onDelete: (booking: Booking) => void
-  /** Booking whose Edit button should receive focus when it reappears (after leaving edit mode). */
-  returnFocusId: string | null
-}
-
-function statusLabel(booking: Booking, now: NowSnapshot): string | null {
-  if (hasEnded(booking, now)) return 'Finished'
-  if (hasStarted(booking, now)) return 'In progress'
-  return null
+  /** Set (as a new object) when focus should return to a booking after leaving edit mode. */
+  returnFocus: { id: string } | null
 }
 
 function describe(booking: Booking): string {
@@ -36,8 +34,10 @@ export function BookingList({
   deletingId,
   onEdit,
   onDelete,
-  returnFocusId,
+  returnFocus,
 }: BookingListProps) {
+  // Wide screens get the day timeline; narrow ones keep the stacked list with inline actions.
+  const isWide = useMediaQuery(TIMELINE_MEDIA_QUERY)
   const [confirmingId, setConfirmingId] = useState<string | null>(null)
   // After "Keep", focus returns to the Delete button that opened the confirmation.
   const [keptId, setKeptId] = useState<string | null>(null)
@@ -76,12 +76,25 @@ export function BookingList({
     )
   }
 
+  if (isWide) {
+    return (
+      <BookingTimeline
+        bookings={query.data}
+        now={now}
+        editingId={editingId}
+        returnFocus={returnFocus}
+        onSelect={onEdit}
+      />
+    )
+  }
+
   return (
     <ol className="booking-list">
       {query.data.map((booking) => {
-        const status = statusLabel(booking, now)
+        const statusKey = bookingStatus(booking, now)
+        const status = STATUS_LABEL[statusKey]
         // Past and already-started bookings are read-only.
-        const canModify = !hasStarted(booking, now)
+        const canModify = statusKey === 'upcoming'
         const isEditing = booking.id === editingId
         const isDeleting = booking.id === deletingId
         const isConfirming = booking.id === confirmingId
@@ -94,10 +107,8 @@ export function BookingList({
             <span className={booking.title ? 'booking__title' : 'booking__title booking__title--empty'}>
               {booking.title ?? 'Untitled booking'}
             </span>
-            {status && (
-              <span className={status === 'In progress' ? 'badge badge--accent' : 'badge'}>{status}</span>
-            )}
-            {isEditing && <span className="badge badge--accent">Editing</span>}
+            {status && <span className={`badge badge--${statusKey}`}>{status}</span>}
+            {isEditing && <span className="badge badge--editing">Editing</span>}
 
             {canModify && !isEditing && (
               <span className="booking__actions">
@@ -135,7 +146,7 @@ export function BookingList({
                     <button
                       type="button"
                       aria-label={`Edit ${describe(booking)}`}
-                      autoFocus={booking.id === returnFocusId}
+                      autoFocus={booking.id === returnFocus?.id}
                       onClick={() => onEdit(booking)}
                     >
                       Edit
