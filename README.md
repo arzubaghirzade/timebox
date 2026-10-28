@@ -2,8 +2,8 @@
 
 A single-room booking UI for one working day (09:00–18:00): pick a date, see that day's bookings, and create, edit or delete them. Built as a take-home assessment with React, TypeScript (strict) and a mock API.
 
-- **Demo:** _add the Vercel URL here_
-- **Repository:** _add the repository URL here_
+- **Live demo:** https://timebox-three-delta.vercel.app
+- **Repository:** https://github.com/arzubaghirzade/timebox
 
 ## Running it
 
@@ -128,7 +128,7 @@ Key tests were checked by temporarily breaking the code they protect (removing s
 
 ## Time spent
 
-_Fill in your total._ For reference: the implementation session (planning through Phase 6) ran from about 10:50 to 12:05 on 28 October 2026, not counting reading the brief, review and deployment.
+Approximately 3 hours in total, including planning, implementation, review, the visual polish and timeline iterations, and deployment.
 
 ## Tooling and AI usage
 
